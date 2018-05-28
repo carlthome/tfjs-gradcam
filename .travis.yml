@@ -10,4 +10,4 @@ script:
 - python export_models.py
 - bash convert_models.sh
 - bash serve.sh &
-- google-chrome-stable --headless https://localhost:6006
+- google-chrome-stable --headless --no-sandbox https://localhost:6006
