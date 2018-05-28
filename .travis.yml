@@ -6,6 +6,10 @@ addons:
     packages:
     - parallel
   chrome: stable
+cache:
+  directories:
+  - ~/.keras/models/
+  - ~/.cache/pip/
 install: pip install tensorflow tensorflowjs
 script:
 - python export_models.py
