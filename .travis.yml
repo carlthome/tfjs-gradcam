@@ -1,5 +1,7 @@
 language: python
 addons:
+  apt:
+    update: true
   chrome: stable
 script:
 - python export_models.py
