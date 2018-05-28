@@ -401,13 +401,6 @@
         }
 
         async function gradCam(images, model, classIndex) {
-            /*  TODO Reference Grad-CAM paper properly.
- 
-            http://gradcam.cloudcv.org/
-              
-            Selvaraju, R. R., Cogswell, M., Das, A., Vedantam, R., Parikh, D., & Batra, D. (2016). Grad-cam: Visual explanations from deep networks via gradient-based localization. See https://arxiv. org/abs/1610.02391 v3, 7(8).
-            */
-
             return tf.tidy(() => {
 
                 // Determine last 2D convolution layer.
