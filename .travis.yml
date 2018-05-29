@@ -8,19 +8,21 @@ addons:
   chrome: stable
 cache:
   directories:
-  - ~/.keras/models/
-  - ~/.cache/pip/
+  - "~/.keras/models/"
+  - "~/.cache/pip/"
 install: pip install tensorflow tensorflowjs
 script:
 - python scripts/export_models.py
 - bash scripts/convert_models.sh
 - bash scripts/serve.sh &
 - google-chrome-stable --headless --no-sandbox https://localhost:6006
-# TODO Click on buttons.
 deploy:
   provider: pages
   skip-cleanup: true
-  github-token: $GITHUB_TOKEN
+  github-token: "$GITHUB_TOKEN"
   keep-history: true
   on:
     branch: master
+env:
+  global:
+    secure: NNbP9/f+NP+8KVun8omhOn0kcYfLE6Uo8o+0n1xEH86Tx+2XoV6ano04NYt9RpAwHEowoErQFpjYEhpGKvCKtq0Ww+Bi+Apr27wMh+fsaCcvuUaPzuITp4XEIb1MU9pYazWrYHdfpvQWNAfcUdpHcEo2mgpvGdFW/etHgpXYHRFUInhDIerHcJm1q/j6T6x5S1v7UBVihO28WoK5w0STwaeyP5kvvh87Wl8Lk6yFJxZWTPcrZF5SbN18OjVvMaLgdKM6FX4dVoGRGO87siXMzfy1A3aQU7SRQ64gjaHochgc5PADLCCatUn6x38fdqdpfIVxRs/S+iE81RFJQZ7/mTpD/QesIy7ZDBbfBD75PaQ0oXbNDQA14fA1zoqBfBJ4f2WQECFBX1sXrNSRcd93vU+/Gu2yiRPeHNvPdS2LGKk+9WEnNBkJNihORjG0U3KLH1pKovWkQl6nnjMixL8kvypd4MXQNuFiQ1OQbTBnNoQu80/mtdoK5btKmzH3hqNbAiEZNX9l9hw8rRmOJHsyk5+gYVXFBdhXmc3REC8ite11oVyPGR2SGyhxRlcvjxng/8nAL414TuKeak+1noRT7YkoAzxuLWsv5nuCxdXfrRvtsdCJExlY4UoElzDP2GUaNAIadq54zUKEG3eeA4ktPDQKdXir20EyJ/w5uXnjcTA=
