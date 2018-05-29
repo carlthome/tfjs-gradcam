@@ -1,13 +1,14 @@
 import os
 import inspect
 import tempfile
-import multiprocessing
 
 import tensorflow as tf
 import tensorflowjs as tfjs
 
+models = inspect.getmembers(tf.keras.applications, inspect.isfunction)
 
-def convert(model_name, model_fn):
+for model_name, model_fn in models:
+    tf.keras.backend.clear_session()
     model = model_fn()
     output_path = os.path.join('models', model_name)
     # TODO Fix FailedPreconditionError
@@ -16,8 +17,3 @@ def convert(model_name, model_fn):
         model.save(f.name, include_optimizer=False)
         cmd = f'tensorflowjs_converter --input_format keras {f.name} {output_path}'
         os.system(cmd)
-
-
-models = inspect.getmembers(tf.keras.applications, inspect.isfunction)
-with multiprocessing.Pool() as pool:
-    pool.starmap(convert, models)
