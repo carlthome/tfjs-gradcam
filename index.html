@@ -5,7 +5,6 @@
     <title>tfjs Grad-CAM</title>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-    <link rel="stylesheet" href="range.css">
     <style>
         body {
             display: flex;
@@ -137,12 +136,6 @@
             text-transform: capitalize;
         }
 
-        input[type="range"] {
-            width: 100%;
-            border: none;
-            background: none;
-        }
-
         button:hover {
             background: darkorange;
         }
@@ -161,12 +154,103 @@
         #dropArea:hover {
             opacity: 1;
         }
+
+        input[type=range] {
+            -webkit-appearance: none;
+            width: 100%;
+            border: none;
+            background: none;
+        }
+
+        input[type=range]::-webkit-slider-runnable-track {
+            width: 300px;
+            height: 0.5em;
+            background: #ccc;
+            border: none;
+            border-radius: 3px;
+        }
+
+        input[type=range]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            border: none;
+            height: 1em;
+            width: 1em;
+            border-radius: 50%;
+            background: deepskyblue;
+            margin-top: -4px;
+        }
+
+        input[type=range]:focus {
+            outline: none;
+        }
+
+        input[type=range]:focus::-webkit-slider-runnable-track {
+            background: #ccc;
+        }
+
+        input[type=range]::-moz-range-track {
+            width: 300px;
+            height: 0.5em;
+            background: #ccc;
+            border: none;
+            border-radius: 3px;
+        }
+
+        input[type=range]::-moz-range-thumb {
+            border: none;
+            height: 1em;
+            width: 1em;
+            border-radius: 50%;
+            background: deepskyblue;
+        }
+
+        input[type=range]:-moz-focusring {
+            outline: 1px solid white;
+            outline-offset: -1px;
+        }
+
+        input[type=range]::-ms-track {
+            width: 300px;
+            height: 0.5em;
+            background: transparent;
+            border-color: transparent;
+            border-width: 6px 0;
+            color: transparent;
+        }
+
+        input[type=range]::-ms-fill-lower {
+            background: #777;
+            border-radius: 10px;
+        }
+
+        input[type=range]::-ms-fill-upper {
+            background: #ccc;
+            border-radius: 10px;
+        }
+
+        input[type=range]::-ms-thumb {
+            border: none;
+            height: 1em;
+            width: 1em;
+            border-radius: 50%;
+            background: deepskyblue;
+        }
+
+        input[type=range]:focus::-ms-fill-lower {
+            background: #888;
+        }
+
+        input[type=range]:focus::-ms-fill-upper {
+            background: #ccc;
+        }
     </style>
-    <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@0.11.2"> </script>
+    <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@0.11.2"></script>
     <script src="https://d3js.org/d3.v5.min.js"></script>
+    <script src="https://code.jquery.com/jquery-3.3.1.min.js"></script>
 </head>
 
 <body>
+    <noscript>This website requires JavaScript.</noscript>
     <div id="wrapper">
         <header>
             <h1>Class</h1>
@@ -187,13 +271,16 @@
             <h2>Drag and drop upload an image here</h2>
         </div>
     </div>
-    <script src="https://code.jquery.com/jquery-3.3.1.min.js"></script>
-
     <script>
         'use strict';
 
-        window.onload = async function main() {
-            if (!navigator.userAgent.includes("Chrome/66")) alert("This site has only been tested with Chrome 66.")
+        window.onload = async e => {
+            if (!navigator.userAgent.includes("Chrome")) alert("This site has only been tested with Chrome. Please open an issue if your browser doesn't work: https://github.com/carlthome/tfjs-gradcam/issues")
+            else {
+                const chromeVersion = parseInt(navigator.userAgent.match('Chrome/([0-9]+)')[1])
+                if (chromeVersion < 66) alert('Your version of Chrome is outdated. Please update and relaunch it.')
+            }
+            if (!tf.getBackend().includes('webgl')) alert("This site will run very slow without WebGL enabled. Please enable hardware acceleration and relaunch your browser.")
 
             await populateModelSelect()
             await populateClassSelect()
@@ -202,11 +289,11 @@
             drawImage(image)
 
             const slider = document.getElementById('opacitySlider')
-            slider.oninput = () => saliencyMap.style.opacity = slider.value
+            slider.oninput = e => saliencyMap.style.opacity = slider.value
             saliencyMap.style.opacity = slider.value
 
             const modelSelect = document.getElementById('modelSelect')
-            modelSelect.onchange = async () => {
+            modelSelect.onchange = async e => {
                 modelSelect.classList.add('pulse')
 
                 const modelName = modelSelect.value
@@ -338,7 +425,8 @@
         async function drawSaliencyMap(gradients) {
             const saliencyMap = document.getElementById('saliencyMap')
             const sample = gradients.squeeze().expandDims(2)
-            const resizedGradients = tf.image.resizeBilinear(sample, [saliencyMap.height, saliencyMap.width])
+            const shape = [saliencyMap.height, saliencyMap.width]
+            const resizedGradients = tf.image.resizeBilinear(sample, shape)
             const normalizedGradients = minMaxNormalize(resizedGradients)
 
             const pixels = await tf.toPixels(normalizedGradients)
@@ -349,8 +437,10 @@
                 pixels[i + 2] = color.b
                 pixels[i + 3] = pixels[i]
             }
+
+            const imageData = new ImageData(pixels, saliencyMap.width, saliencyMap.height)
             const ctx = saliencyMap.getContext('2d')
-            ctx.putImageData(new ImageData(pixels, saliencyMap.width, saliencyMap.height), 0, 0)
+            ctx.putImageData(imageData, 0, 0)
         }
 
         async function populateClassSelect(scores = false) {
@@ -401,37 +491,32 @@
         }
 
         async function gradCam(images, model, classIndex) {
-            return tf.tidy(() => {
+            // Determine last 2D convolution layer.
+            const layer = model.layers
+                .filter(x => { try { x.output; return true } catch { return false } })
+                .filter(x => x.output.shape.length == 4)
+                .filter(x => x.output.shape[1] > 1 || x.output.shape[2] > 1)
+                .slice(-1)[0]
+            console.debug(`Last convolution layer seems to be called ${layer.name}.`, layer)
+            console.assert(layer.outboundNodes.length == 1)
 
-                // Determine last 2D convolution layer.
-                const layer = model.layers
-                    .filter(x => { try { x.output; return true } catch { return false } })
-                    .filter(x => x.output.shape.length == 4)
-                    .filter(x => x.output.shape[1] > 1 || x.output.shape[2] > 1)
-                    .slice(-1)[0]
-                console.debug(`Last convolution layer seems to be called ${layer.name}.`, layer)
-                console.assert(layer.outboundNodes.length == 1)
+            const cnn = tf.model({ inputs: model.inputs, outputs: layer.output })
 
-                const cnn = tf.model({ inputs: model.inputs, outputs: layer.output })
+            // TODO Don't assume a sequential model for the task-specific section.
+            const i = model.layers.lastIndexOf(layer)
+            const layers = model.layers.slice(i + 1)
+            const x = tf.input({ batchShape: layer.output.shape })
+            let y = x
+            for (const layer of layers) y = layer.apply(y)
+            const taskSpecific = tf.model({ inputs: x, outputs: y })
+            console.debug('Task specific part: ', taskSpecific.layers.map(x => x.name))
 
-                // TODO Don't assume a sequential model for the task-specific section.
-                const i = model.layers.lastIndexOf(layer)
-                const layers = model.layers.slice(i + 1)
-                const x = tf.input({ batchShape: layer.output.shape })
-                let y = x
-                for (const layer of layers) y = layer.apply(y)
-                const taskSpecific = tf.model({ inputs: x, outputs: y })
-                console.debug('Task specific part: ', taskSpecific.layers.map(x => x.name))
-
-                const featureMaps = cnn.predict(images)
-                const f = x => taskSpecific.predict(x).slice([0, classIndex], [images.shape[0], 1])
-                const df = tf.grad(f)
-                const grads = df(featureMaps)
-                const alphas = tf.mean(grads, [1, 2])
-                return alphas.mul(featureMaps).sum(-1).relu()
-
-            })
-            console.info(tf.memory())
+            const featureMaps = cnn.predict(images)
+            const f = x => taskSpecific.predict(x).slice([0, classIndex], [images.shape[0], 1])
+            const df = tf.grad(f)
+            const grads = df(featureMaps)
+            const alphas = tf.mean(grads, [1, 2])
+            return alphas.mul(featureMaps).sum(-1).relu()
         }
     </script>
 </body>
