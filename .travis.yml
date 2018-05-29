@@ -11,11 +11,7 @@ cache:
   - "~/.keras/models/"
   - "~/.cache/pip/"
 install: pip install tensorflow tensorflowjs
-script:
-- python scripts/export_models.py
-- bash scripts/convert_models.sh
-- bash scripts/serve.sh &
-- google-chrome-stable --headless --no-sandbox https://localhost:6006
+script: python export_models.py
 deploy:
   provider: pages
   skip-cleanup: true
