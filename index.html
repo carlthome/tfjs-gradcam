@@ -273,14 +273,20 @@
     </div>
     <script>
         'use strict';
-
         window.onload = async e => {
-            if (!navigator.userAgent.includes("Chrome")) alert("This site has only been tested with Chrome. Please open an issue if your browser doesn't work: https://github.com/carlthome/tfjs-gradcam/issues")
-            else {
-                const chromeVersion = parseInt(navigator.userAgent.match('Chrome/([0-9]+)')[1])
-                if (chromeVersion < 66) alert('Your version of Chrome is outdated. Please update and relaunch it.')
+            if (navigator.userAgent.includes('Firefox')) {
+                const majorVersion = parseInt(navigator.userAgent.match('Firefox/([0-9]+)')[1])
+                if (majorVersion < 60) alert('Firefox is outdated. Please update and relaunch it.')
+            } else if (navigator.userAgent.includes("Chrome")) {
+                const majorVersion = parseInt(navigator.userAgent.match('Chrome/([0-9]+)')[1])
+                if (majorVersion < 66) alert('Chrome is outdated. Please update and relaunch it.')
+            } else {
+                alert("This site has only been tested with Chrome and Firefox. Please open an issue if your browser doesn't work: https://github.com/carlthome/tfjs-gradcam/issues")
             }
-            if (!tf.getBackend().includes('webgl')) alert("This site will run very slow without WebGL enabled. Please enable hardware acceleration and relaunch your browser.")
+
+            if (!tf.getBackend().includes('webgl')) {
+                alert("This site will run very slow without WebGL enabled. Please enable hardware acceleration and relaunch your browser.")
+            }
 
             await populateModelSelect()
             await populateClassSelect()
