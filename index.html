@@ -163,7 +163,7 @@
         }
 
         input[type=range]::-webkit-slider-runnable-track {
-            width: 300px;
+            width: 100%;
             height: 0.5em;
             background: #ccc;
             border: none;
@@ -189,7 +189,7 @@
         }
 
         input[type=range]::-moz-range-track {
-            width: 300px;
+            width: 100%;
             height: 0.5em;
             background: #ccc;
             border: none;
@@ -210,7 +210,7 @@
         }
 
         input[type=range]::-ms-track {
-            width: 300px;
+            width: 100%;
             height: 0.5em;
             background: transparent;
             border-color: transparent;
@@ -295,7 +295,7 @@
             drawImage(image)
 
             const slider = document.getElementById('opacitySlider')
-            slider.oninput = e => saliencyMap.style.opacity = slider.value
+            slider.onchange = slider.oninput = e => saliencyMap.style.opacity = slider.value
             saliencyMap.style.opacity = slider.value
 
             const modelSelect = document.getElementById('modelSelect')
