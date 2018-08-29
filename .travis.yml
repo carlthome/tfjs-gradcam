@@ -10,6 +10,7 @@ cache:
   directories:
   - "~/.keras/models/"
   - "~/.cache/pip/"
+before_install: pip install tensorflow_hub # TODO This should not be needed.
 install: pip install tensorflow tensorflowjs
 script: python export_models.py
 deploy:
