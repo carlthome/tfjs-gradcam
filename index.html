@@ -244,7 +244,7 @@
             background: #ccc;
         }
     </style>
-    <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@0.11.2"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@0.12.5"></script>
     <script src="https://d3js.org/d3.v5.min.js"></script>
     <script src="https://code.jquery.com/jquery-3.3.1.min.js"></script>
 </head>
@@ -472,10 +472,6 @@
         }
 
         async function populateModelSelect() {
-
-            // TODO Check if tfjs supports these eventually:
-            const brokenModels = ['InceptionResNetV2', 'InceptionV3', 'NASNetLarge', 'NASNetMobile', 'Xception']
-
             const select = document.getElementById('modelSelect')
             const modelNames = await fetch('models.csv')
                 .then(x => x.text())
@@ -484,7 +480,6 @@
             for (const modelName of modelNames) {
                 const option = document.createElement('option')
                 option.value = option.text = modelName
-                if (brokenModels.includes(modelName)) option.disabled = true
                 select.add(option)
             }
         }
