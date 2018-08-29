@@ -1,6 +1,5 @@
 import os
 import inspect
-import tempfile
 
 import tensorflow as tf
 import tensorflowjs as tfjs
