@@ -9,8 +9,10 @@ cache:
 install:
 - pip install tensorflowjs
 - pip install selenium
-- wget https://chromedriver.storage.googleapis.com/2.43/chromedriver_linux64.zip
-- unzip chromedriver_linux64.zip
+- wget https://github.com/mozilla/geckodriver/releases/download/v0.23.0/geckodriver-v0.23.0-linux64.tar.gz -O gecko.tar.gz
+- tar -xzf gecko.tar.gz
+- wget https://chromedriver.storage.googleapis.com/2.43/chromedriver_linux64.zip -O chromedriver.zip
+- unzip chromedriver.zip
 #- "export DISPLAY=:99.0"
 #- "sh -e /etc/init.d/xvfb start"
 #- sleep 3
