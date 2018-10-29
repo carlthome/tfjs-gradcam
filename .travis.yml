@@ -2,6 +2,7 @@ language: python
 python: 3.6
 addons:
   chrome: stable
+  firefox: stable
 cache:
   directories:
   - "~/.keras/models/"
