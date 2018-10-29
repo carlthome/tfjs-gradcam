@@ -256,7 +256,7 @@
             <h1>Class</h1>
             <meter min="0" max="1.0" low="0.25" high="0.75" optimum="1.0"></meter>
         </header>
-        <form action='#'>
+        <form>
             <input id="searchQuery" placeholder="Search Flickr...">
             <button id="imageButton">Get image</button>
             <select id="classSelect"></select>
@@ -299,8 +299,9 @@
             saliencyMap.style.opacity = slider.value
 
             const modelSelect = document.getElementById('modelSelect')
-            modelSelect.onchange = async e => {
+            modelSelect.onchange = async () => {
                 modelSelect.classList.add('pulse')
+                modelSelect.disabled = true
 
                 const modelName = modelSelect.value
                 const model = await tf.loadModel(`models/${modelName}/model.json`)
@@ -312,23 +313,31 @@
 
                 const classSelect = document.getElementById('classSelect')
                 classSelect.onchange = async e => {
-                    e.target.classList.add('pulse')
+                    classSelect.classList.add('pulse')
+                    classSelect.disabled = true
+
                     const image = document.getElementById('imageCanvas')
                     await plotSalience(image, model)
-                    e.target.classList.remove('pulse')
+
+                    classSelect.classList.remove('pulse')
+                    classSelect.disabled = false
                 }
 
                 const button = document.getElementById('imageButton')
                 button.onclick = async e => {
-                    e.target.classList.add('pulse')
+                    e.preventDefault()
+                    button.classList.add('pulse')
+                    button.disabled = true
 
                     const query = document.getElementById('searchQuery').value
+                    // TODO Handle empty search results.
                     const image = await imageSearch(query)
                     drawImage(image)
 
                     await classifyImage(image, model)
                     await plotSalience(image, model)
-                    e.target.classList.remove('pulse')
+                    button.classList.remove('pulse')
+                    button.disabled = false
                 }
 
                 const body = document.querySelector('body')
@@ -343,16 +352,15 @@
                         image.src = e.target.result
                         image.onload = async e => {
                             const area = document.getElementById('dropArea')
-                            area.classList.add('pulse')
                             drawImage(image)
                             await classifyImage(image, model)
                             await plotSalience(image, model)
-                            area.classList.remove('pulse')
                         }
                     }
                     reader.readAsDataURL(file)
                 }
                 modelSelect.classList.remove('pulse')
+                modelSelect.disabled = false
             }
             modelSelect.onchange()
         }
@@ -419,11 +427,14 @@
                     tagmode: "all",
                     format: "json"
                 }, response => {
-                    const image = new Image()
-                    const n = Math.floor(Math.random() * response.items.length)
-                    image.src = response.items[n]['media']['m'].replace("_m", "_b")
-                    image.crossOrigin = ''
-                    image.onload = () => resolve(image)
+                    if (response.items.length === 0) reject('No results. Search again.')
+                    else {
+                        const image = new Image()
+                        const n = Math.floor(Math.random() * response.items.length)
+                        image.src = response.items[n]['media']['m'].replace("_m", "_b")
+                        image.crossOrigin = ''
+                        image.onload = () => resolve(image)
+                    }
                 })
             })
         }
